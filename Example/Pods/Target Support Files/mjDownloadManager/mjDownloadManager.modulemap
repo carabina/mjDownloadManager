@@ -1,0 +1,6 @@
+framework module mjDownloadManager {
+  umbrella header "mjDownloadManager-umbrella.h"
+
+  export *
+  module * { export * }
+}

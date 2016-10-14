@@ -1,0 +1,6 @@
+framework module Pods_mjDownloadManagerExampleTests {
+  umbrella header "Pods-mjDownloadManagerExampleTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

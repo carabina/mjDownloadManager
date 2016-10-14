@@ -1,0 +1,18 @@
+
+platform :ios, '8.0'
+
+target 'mjDownloadManagerExample' do
+  use_frameworks!
+
+  pod 'mjDownloadManager', :path => '../'
+
+  target 'mjDownloadManagerExampleTests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+
+  target 'mjDownloadManagerExampleUITests' do
+    inherit! :search_paths
+    # Pods for testing
+  end
+end

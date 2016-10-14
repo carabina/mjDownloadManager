@@ -1,0 +1,19 @@
+PODS:
+  - Alamofire (3.5.1)
+  - mjDownloadManager (1.0.0):
+    - Alamofire (~> 3.0)
+
+DEPENDENCIES:
+  - mjDownloadManager (from `../`)
+
+EXTERNAL SOURCES:
+  mjDownloadManager:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Alamofire: 0dfba1184a543e2aa160f4e39cac4e8aba48d223
+  mjDownloadManager: 0eff6e2a3f42580a6c2ea536f8842cf4bebf8b73
+
+PODFILE CHECKSUM: d01d1f584d6232506dea3b05203bc8f053efe521
+
+COCOAPODS: 1.1.0.rc.3
