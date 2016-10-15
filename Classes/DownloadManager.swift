@@ -1,12 +1,12 @@
 import Foundation
 import Alamofire
 
-@objc public protocol mjDownloadManagerDelegate {
-    @objc optional func onDownloadStart(item: DownloadItem)
-    @objc optional func onDownloadSuccess(item: DownloadItem)
-    @objc optional func onDownloadFailure(item: DownloadItem, error: NSError)
-    @objc optional func onDownloadProgress(item: DownloadItem)
-    @objc optional func onDownloadFinishAll()
+public protocol mjDownloadManagerDelegate {
+    func onDownloadStart(item: DownloadItem)
+    func onDownloadSuccess(item: DownloadItem)
+    func onDownloadFailure(item: DownloadItem, error: NSError)
+    func onDownloadProgress(item: DownloadItem)
+    func onDownloadFinishAll()
 }
 
 public class mjDownloadManager {
@@ -49,7 +49,7 @@ public class mjDownloadManager {
 }
 
 extension mjDownloadManager {
-
+    
     public func addItem(fileName fileName: String, fileURL: String) {
         self.addItem(DownloadItem(fileName: fileName, fileURL: fileURL))
     }
@@ -72,9 +72,7 @@ extension mjDownloadManager {
             return;
         }
         guard let nextItem = self.items.first else {
-            if self.delegate?.onDownloadFinishAll != nil {
-                self.delegate?.onDownloadFinishAll!()
-            }
+            self.delegate?.onDownloadFinishAll()
             return
         }
         download(nextItem)
@@ -82,18 +80,14 @@ extension mjDownloadManager {
     
     @objc func progressUpdate() {
         if self.currentItem != nil {
-            if self.delegate?.onDownloadProgress != nil {
-                self.delegate?.onDownloadProgress!(self.currentItem!)
-            }
+            self.delegate?.onDownloadProgress(self.currentItem!)
         }
     }
     
     private func download(downloadItem: DownloadItem) {
         self.currentItem = downloadItem
-        if self.delegate?.onDownloadStart != nil {
-            self.delegate?.onDownloadStart!(downloadItem)
-        }
-
+        self.delegate?.onDownloadStart(downloadItem)
+        
         let url = NSURL(fileURLWithPath: downloadItem.destinationPath)
         let filePath = url.URLByAppendingPathComponent(downloadItem.fileName).path!
         if NSFileManager.fileExistsAtPath(filePath) {
@@ -106,31 +100,20 @@ extension mjDownloadManager {
                 self.progressTimer?.invalidate()
                 if let error = error {
                     if error.code != NSURLErrorCancelled {
-                        if self.delegate?.onDownloadFailure != nil {
-                            if error.code == 516 {
-                                
-                            }
-                            self.delegate?.onDownloadFailure!(downloadItem, error: error)
-                        }
+                        self.delegate?.onDownloadFailure(downloadItem, error: error)
                     }
                 } else {
                     dispatch_async(dispatch_get_main_queue()) {
-                        if self.delegate?.onDownloadProgress != nil {
-                            downloadItem.progress = 1.0
-                            self.delegate?.onDownloadProgress!(downloadItem)
-                        }
-                        if self.delegate?.onDownloadSuccess != nil {
-                            self.delegate?.onDownloadSuccess!(downloadItem)
-                        }
+                        downloadItem.progress = 1.0
+                        self.delegate?.onDownloadProgress(downloadItem)
+                        self.delegate?.onDownloadSuccess(downloadItem)
                     }
                 }
-                if !self.items.isEmpty {
-                    self.items.removeFirst()
-                }
+                //if !self.items.isEmpty {
+                self.items.removeFirst()
+                //}
                 guard let nextItem = self.items.first else {
-                    if self.delegate?.onDownloadFinishAll != nil {
-                        self.delegate?.onDownloadFinishAll!()
-                    }
+                    self.delegate?.onDownloadFinishAll()
                     return
                 }
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(0.1 * Double(NSEC_PER_SEC))), dispatch_get_main_queue()) {
@@ -212,7 +195,9 @@ extension DownloadItem {
             if !NSFileManager.directoryExistsAtPath(self.destinationPath) {
                 try! NSFileManager.defaultManager().createDirectoryAtPath(self.destinationPath, withIntermediateDirectories: false, attributes: nil)
             }
-            return NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
+            let finalPath = NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
+            print(finalPath)
+            return finalPath
         }
     }
 }
@@ -306,7 +291,7 @@ public class DownloadItem: NSObject {
     private override init() {
         super.init()
     }
-
+    
     public convenience init(fileName: String, fileURL: String) {
         let destinationPath = NSFileManager.downloadDirectory.path!
         self.init(fileName: fileName, fileURL: fileURL, destinationPath: destinationPath);
