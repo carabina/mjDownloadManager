@@ -73,7 +73,7 @@ extension NSFileManager {
     public static func removeFile(filePath: String?) {
         if filePath != nil {
             if fileExistsAtPath(filePath!) {
-                let _ = try? NSFileManager.defaultManager().removeItemAtURL(NSURL(string: filePath!)!)
+                let _ = try? NSFileManager.defaultManager().removeItemAtURL(NSURL.fileURLWithPath(filePath!))
             }
         }
     }

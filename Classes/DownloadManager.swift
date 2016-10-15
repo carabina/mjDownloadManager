@@ -51,8 +51,7 @@ public class mjDownloadManager {
 extension mjDownloadManager {
 
     public func addItem(fileName fileName: String, fileURL: String) {
-        let destinationPath = NSFileManager.downloadDirectory.path
-        self.addItem(fileName: fileName, fileURL: fileURL, destinationPath: destinationPath!)
+        self.addItem(DownloadItem(fileName: fileName, fileURL: fileURL))
     }
     
     public func addItem(fileName fileName: String, fileURL: String, destinationPath: String) {
@@ -94,19 +93,13 @@ extension mjDownloadManager {
         if self.delegate?.onDownloadStart != nil {
             self.delegate?.onDownloadStart!(downloadItem)
         }
-        
+
         let url = NSURL(fileURLWithPath: downloadItem.destinationPath)
         let filePath = url.URLByAppendingPathComponent(downloadItem.fileName).path!
         if NSFileManager.fileExistsAtPath(filePath) {
-            if self.delegate?.onDownloadFailure != nil {
-                let failureReason = "A file already exists at the given file URL: \(downloadItem.fileURL)"
-                let userInfo = [NSLocalizedFailureReasonErrorKey: failureReason]
-                let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: userInfo)
-                self.delegate?.onDownloadFailure!(downloadItem, error: error)
-                return
-            }
+            NSFileManager.removeFile(filePath)
         }
-
+        
         progressTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: #selector(mjDownloadManager.progressUpdate), userInfo: nil, repeats: true)
         downloadItem.start()
             .response { (request, response, data, error) -> Void in
@@ -114,7 +107,9 @@ extension mjDownloadManager {
                 if let error = error {
                     if error.code != NSURLErrorCancelled {
                         if self.delegate?.onDownloadFailure != nil {
-                            print(error)
+                            if error.code == 516 {
+                                
+                            }
                             self.delegate?.onDownloadFailure!(downloadItem, error: error)
                         }
                     }
@@ -217,11 +212,6 @@ extension DownloadItem {
             if !NSFileManager.directoryExistsAtPath(self.destinationPath) {
                 try! NSFileManager.defaultManager().createDirectoryAtPath(self.destinationPath, withIntermediateDirectories: false, attributes: nil)
             }
-            /*
-            if fileManager.fileExistsAtPath(finalPath!.absoluteString!) {
-                fileManager.removeItemAtPath(finalPath!.absoluteString!, error: nil)
-            }
-            */
             return NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
         }
     }
@@ -315,6 +305,11 @@ public class DownloadItem: NSObject {
     
     private override init() {
         super.init()
+    }
+
+    public convenience init(fileName: String, fileURL: String) {
+        let destinationPath = NSFileManager.downloadDirectory.path!
+        self.init(fileName: fileName, fileURL: fileURL, destinationPath: destinationPath);
     }
     
     public convenience init(fileName: String, fileURL: String, destinationPath: String) {
