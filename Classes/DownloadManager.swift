@@ -1,31 +1,26 @@
 import Foundation
 import Alamofire
 
-public protocol mjDownloadManagerDelegate {
-    func onDownloadStarted(item: DownloadItem)
-    func onDownloadComplete(item: DownloadItem)
-    func onDownloadError(item: DownloadItem, error: NSError)
-    func onProgressChanged(item: DownloadItem)
-    func onAllDownloadsComplete()
+@objc public protocol mjDownloadManagerDelegate {
+    @objc optional func onDownloadStart(item: DownloadItem)
+    @objc optional func onDownloadSuccess(item: DownloadItem)
+    @objc optional func onDownloadFailure(item: DownloadItem, error: NSError)
+    @objc optional func onDownloadProgress(item: DownloadItem)
+    @objc optional func onDownloadFinishAll()
 }
 
 public class mjDownloadManager {
-    public static let NOTIFICATION_DOWNLOAD_COMPLETE = "com.github.blackho1e.mjDownloadManager.complete"
-    public static let NOTIFICATION_DOWNLOAD_COMPLETE_ALL = "com.github.blackho1e.mjDownloadManager.complete_all"
-    public static let NOTIFICATION_DOWNLOAD_ERROR = "com.github.blackho1e.mjDownloadManager.error"
-    public static let NOTIFICATION_DOWNLOAD_PROGRESS = "com.github.blackho1e.mjDownloadManager.progress"
     public static let NOTIFICATION_DOWNLOAD_START = "com.github.blackho1e.mjDownloadManager.start"
+    public static let NOTIFICATION_DOWNLOAD_PROGRESS = "com.github.blackho1e.mjDownloadManager.progress"
+    public static let NOTIFICATION_DOWNLOAD_SUCCESS = "com.github.blackho1e.mjDownloadManager.success"
+    public static let NOTIFICATION_DOWNLOAD_FAILURE = "com.github.blackho1e.mjDownloadManager.failure"
+    public static let NOTIFICATION_DOWNLOAD_FINISH_ALL = "com.github.blackho1e.mjDownloadManager.finishall"
     
+    public static let sharedInstance = mjDownloadManager()
     public var delegate: mjDownloadManagerDelegate?
     private var currentItem: DownloadItem?
     private var items: [DownloadItem] = []
-    
-    public static var sharedInstance: mjDownloadManager {
-        struct Singleton {
-            static let instance = mjDownloadManager()
-        }
-        return Singleton.instance
-    }
+    private var progressTimer: NSTimer?
     
     public static func defaultConfiguration() -> NSURLSessionConfiguration {
         let bundleIdentifier = NSBundle.mainBundle().bundleIdentifier!
@@ -54,7 +49,15 @@ public class mjDownloadManager {
 }
 
 extension mjDownloadManager {
+
+    public func addItem(fileName fileName: String, fileURL: String) {
+        let destinationPath = NSFileManager.downloadDirectory.absoluteString
+        self.addItem(fileName: fileName, fileURL: fileURL, destinationPath: destinationPath)
+    }
     
+    public func addItem(fileName fileName: String, fileURL: String, destinationPath: String) {
+        self.addItem(DownloadItem(fileName: fileName, fileURL: fileURL, destinationPath: destinationPath))
+    }
     
     public func addItem(newItem: DownloadItem) {
         for (_, item) in items.enumerate() {
@@ -69,36 +72,37 @@ extension mjDownloadManager {
         if self.currentItem != nil {
             return;
         }
-        guard let item = self.items.first else {
-            self.delegate?.onAllDownloadsComplete()
+        guard let nextItem = self.items.first else {
+            self.delegate?.onDownloadFinishAll!()
             return
         }
-        download(item)
+        download(nextItem)
+    }
+    
+    @objc func progressUpdate() {
+        if self.currentItem != nil {
+            self.delegate?.onDownloadProgress!(self.currentItem!)
+        }
     }
     
     private func download(downloadItem: DownloadItem) {
+        self.currentItem = downloadItem
+        self.delegate?.onDownloadStart!(downloadItem)
+        progressTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: #selector(mjDownloadManager.progressUpdate), userInfo: nil, repeats: true)
         downloadItem.start()
-            .progress({ bytesWritten, totalBytesWritten, totalBytesExpectedToWrite in
-                dispatch_async(dispatch_get_main_queue()) {
-                    let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
-                    downloadItem.progress = progress
-                    if progress == 0 {
-                        self.delegate?.onDownloadStarted(downloadItem)
-                    } else {
-                        self.delegate?.onProgressChanged(downloadItem)
-                    }
-                }
-            })
             .response { (request, response, data, error) -> Void in
+                self.progressTimer?.invalidate()
                 if let error = error {
                     if error.code != NSURLErrorCancelled {
                         dispatch_async(dispatch_get_main_queue()) {
-                            self.delegate?.onDownloadError(downloadItem, error: error)
+                            self.delegate?.onDownloadFailure!(downloadItem, error: error)
                         }
                     }
                 } else {
                     dispatch_async(dispatch_get_main_queue()) {
-                        self.delegate?.onDownloadComplete(downloadItem)
+                        downloadItem.progress = 1.0
+                        self.delegate?.onDownloadProgress!(downloadItem)
+                        self.delegate?.onDownloadSuccess!(downloadItem)
                     }
                 }
                 if !self.items.isEmpty {
@@ -106,7 +110,7 @@ extension mjDownloadManager {
                 }
                 guard let nextItem = self.items.first else {
                     dispatch_async(dispatch_get_main_queue()) {
-                        self.delegate?.onAllDownloadsComplete()
+                        self.delegate?.onDownloadFinishAll!()
                     }
                     return
                 }
@@ -186,18 +190,10 @@ extension mjDownloadManager {
 extension DownloadItem {
     func defaultDestination() -> Request.DownloadFileDestination {
         return { temporaryURL, response -> NSURL in
-            let donwloadPath = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)[0].stringByAppendingString("/Downloads")
-            do {
-                if !NSFileManager.directoryExistsAtPath(donwloadPath) {
-                    try NSFileManager.defaultManager().createDirectoryAtPath(donwloadPath, withIntermediateDirectories: false, attributes: nil)
-                }
-            } catch let error as NSError {
-                print(error.localizedDescription)
+            if !NSFileManager.directoryExistsAtPath(self.destinationPath) {
+                try! NSFileManager.defaultManager().createDirectoryAtPath(self.destinationPath, withIntermediateDirectories: false, attributes: nil)
             }
-            let downloadPathUrl = NSURL(fileURLWithPath: donwloadPath).URLByAppendingPathComponent(response.suggestedFilename!)
-            self.destinationPath = downloadPathUrl.absoluteString
-            print(self.destinationPath)
-            return downloadPathUrl
+            return NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
         }
     }
 }
@@ -206,8 +202,6 @@ extension DownloadItem {
     
     private func start() -> Request {
         self.status = .DOWNLOADING
-        mjDownloadManager.sharedInstance.currentItem = self
-        mjDownloadManager.sharedInstance.backgroundManager.startRequestsImmediately = true
         if resumeData != nil {
             self.request = mjDownloadManager.sharedInstance.backgroundManager.download(resumeData!, destination: self.defaultDestination())
         } else {
@@ -242,6 +236,8 @@ extension DownloadItem {
     private func downloadProgress(bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         dispatch_async(dispatch_get_main_queue()) {
             self.status = .DOWNLOADING
+            let progress = Float(totalBytesWritten) / Float(totalBytesExpectedToWrite)
+            self.progress = progress
         }
     }
     

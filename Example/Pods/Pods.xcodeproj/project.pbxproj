@@ -12,7 +12,6 @@
 		16102E4E35FAA0FC4161282FECE56469 /* Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBA7F3642776C1964512C9A38829081 /* Timeline.swift */; };
 		1F8960A4442075100758ED8D8940A232 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41EA265E42E2F53F87DD98BDA6BDEFD5 /* Foundation.framework */; };
 		26B8EE0F48599662BBA0123BCEF58953 /* Pods-mjDownloadManagerExampleUITests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7C5B30D7F8375AC949C7AFCED23DDEFF /* Pods-mjDownloadManagerExampleUITests-dummy.m */; };
-		28907EBB268067501BAF9063EE460B12 /* NSNotificationCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F184F9924561C3390E93B56B6B863D /* NSNotificationCenter.swift */; };
 		2D3405986FC586FA6C0A5E0B6BA7E64E /* Validation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658CBED44D4009D80F990A188D7A8B3F /* Validation.swift */; };
 		34CCDCA848A701466256BC2927DA8856 /* NetworkReachabilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9278DA00F41E390EE68B6F3C8161C54 /* NetworkReachabilityManager.swift */; };
 		3EA8F215C9C1432D74E5CCA4834AA8C0 /* ResponseSerialization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2959D264574F227296E36F7CDF2E4F4F /* ResponseSerialization.swift */; };
@@ -102,7 +101,6 @@
 		6D1F9022AC9979CD59E8F83962DAF51D /* Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Error.swift; path = Source/Error.swift; sourceTree = "<group>"; };
 		706C7AFFE37BA158C3553250F4B5FAED /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		708DB343E5FA1BFC5FF0426FD3A1717B /* Pods-mjDownloadManagerExampleUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-mjDownloadManagerExampleUITests.release.xcconfig"; sourceTree = "<group>"; };
-		72F184F9924561C3390E93B56B6B863D /* NSNotificationCenter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NSNotificationCenter.swift; sourceTree = "<group>"; };
 		7470274CBC9FF0C93F90C60EAFC95134 /* mjDownloadManager-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "mjDownloadManager-prefix.pch"; sourceTree = "<group>"; };
 		79E32C97D15B18BFEB591B4A8B5C8477 /* Notifications.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Notifications.swift; path = Source/Notifications.swift; sourceTree = "<group>"; };
 		7C5B30D7F8375AC949C7AFCED23DDEFF /* Pods-mjDownloadManagerExampleUITests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-mjDownloadManagerExampleUITests-dummy.m"; sourceTree = "<group>"; };
@@ -326,7 +324,6 @@
 			children = (
 				A4FA614F8027D851ED962D108A33C2E5 /* DownloadManager.swift */,
 				7EC77D862A8446596F007EEE74961765 /* NSFileManager.swift */,
-				72F184F9924561C3390E93B56B6B863D /* NSNotificationCenter.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -553,7 +550,6 @@
 				979052B49C6A8D9532ABD51482836CEC /* DownloadManager.swift in Sources */,
 				D5E0AFDADE9B2C0FD454C8DCD43EAC62 /* mjDownloadManager-dummy.m in Sources */,
 				1097C610039E154DC8F84FE6F68408BB /* NSFileManager.swift in Sources */,
-				28907EBB268067501BAF9063EE460B12 /* NSNotificationCenter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -36,23 +36,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, mjDownloadManagerDelegate
 
     }
 
-    func onDownloadStarted(item: DownloadItem) {
+    func onDownloadStart(item: DownloadItem) {
         NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_START, object: self, userInfo: ["item": item])
     }
     
-    func onDownloadComplete(item: DownloadItem) {
-        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_COMPLETE, object: self, userInfo: ["item": item])
-    }
-    
-    func onDownloadError(item: DownloadItem, error: NSError) {
-        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_ERROR, object: self, userInfo: ["item": item, "error": error])
-    }
-    
-    func onProgressChanged(item: DownloadItem) {
+    func onDownloadProgress(item: DownloadItem) {
         NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_PROGRESS, object: self, userInfo: ["item": item])
     }
     
-    func onAllDownloadsComplete() {
-        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_COMPLETE_ALL, object: self)
+    func onDownloadSuccess(item: DownloadItem) {
+        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_SUCCESS, object: self, userInfo: ["item": item])
+    }
+    
+    func onDownloadFailure(item: DownloadItem, error: NSError) {
+        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_FAILURE, object: self, userInfo: ["item": item, "error": error])
+    }
+    
+    func onDownloadFinishAll() {
+        NSNotificationCenter.defaultCenter().postNotificationName(mjDownloadManager.NOTIFICATION_DOWNLOAD_FINISH_ALL, object: self)
     }
 }
