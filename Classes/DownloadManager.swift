@@ -72,6 +72,7 @@ extension mjDownloadManager {
             return;
         }
         guard let nextItem = self.items.first else {
+            self.currentItem = nil
             self.delegate?.onDownloadFinishAll()
             return
         }
@@ -109,10 +110,11 @@ extension mjDownloadManager {
                         self.delegate?.onDownloadSuccess(downloadItem)
                     }
                 }
-                //if !self.items.isEmpty {
-                self.items.removeFirst()
-                //}
+                if !self.items.isEmpty {
+                    self.items.removeFirst()
+                }
                 guard let nextItem = self.items.first else {
+                    self.currentItem = nil
                     self.delegate?.onDownloadFinishAll()
                     return
                 }
@@ -195,9 +197,7 @@ extension DownloadItem {
             if !NSFileManager.directoryExistsAtPath(self.destinationPath) {
                 try! NSFileManager.defaultManager().createDirectoryAtPath(self.destinationPath, withIntermediateDirectories: false, attributes: nil)
             }
-            let finalPath = NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
-            print(finalPath)
-            return finalPath
+            return NSURL(fileURLWithPath: self.destinationPath).URLByAppendingPathComponent(self.fileName)
         }
     }
 }
@@ -282,6 +282,7 @@ public class DownloadItem: NSObject {
     
     private var request: Alamofire.Request?
     private var resumeData: NSData?
+    public var id: Int?
     public var fileName: String = ""
     public var fileURL: String = ""
     public var destinationPath: String = ""

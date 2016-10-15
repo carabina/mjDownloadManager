@@ -21,6 +21,7 @@ class ViewController: UIViewController {
         let fileURL2 = "https://github.com/mj-android/mjPermissions/archive/1.0.7.zip"
         let fileName2 = "mjPermissions.zip"
         mjDownloadManager.sharedInstance.addItem(fileName: fileName2, fileURL: fileURL2)
+        mjDownloadManager.sharedInstance.addItem(fileName: fileName2, fileURL: fileURL2)
         mjDownloadManager.sharedInstance.start()
     }
     
