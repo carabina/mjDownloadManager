@@ -73,7 +73,9 @@ extension mjDownloadManager {
             return;
         }
         guard let nextItem = self.items.first else {
-            self.delegate?.onDownloadFinishAll!()
+            if self.delegate?.onDownloadFinishAll != nil {
+                self.delegate?.onDownloadFinishAll!()
+            }
             return
         }
         download(nextItem)
@@ -81,35 +83,43 @@ extension mjDownloadManager {
     
     @objc func progressUpdate() {
         if self.currentItem != nil {
-            self.delegate?.onDownloadProgress!(self.currentItem!)
+            if self.delegate?.onDownloadProgress != nil {
+                self.delegate?.onDownloadProgress!(self.currentItem!)
+            }
         }
     }
     
     private func download(downloadItem: DownloadItem) {
         self.currentItem = downloadItem
-        self.delegate?.onDownloadStart!(downloadItem)
+        if self.delegate?.onDownloadStart != nil {
+            self.delegate?.onDownloadStart!(downloadItem)
+        }
         progressTimer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: #selector(mjDownloadManager.progressUpdate), userInfo: nil, repeats: true)
         downloadItem.start()
             .response { (request, response, data, error) -> Void in
                 self.progressTimer?.invalidate()
                 if let error = error {
                     if error.code != NSURLErrorCancelled {
-                        dispatch_async(dispatch_get_main_queue()) {
+                        if self.delegate?.onDownloadFailure != nil {
                             self.delegate?.onDownloadFailure!(downloadItem, error: error)
                         }
                     }
                 } else {
                     dispatch_async(dispatch_get_main_queue()) {
-                        downloadItem.progress = 1.0
-                        self.delegate?.onDownloadProgress!(downloadItem)
-                        self.delegate?.onDownloadSuccess!(downloadItem)
+                        if self.delegate?.onDownloadProgress != nil {
+                            downloadItem.progress = 1.0
+                            self.delegate?.onDownloadProgress!(downloadItem)
+                        }
+                        if self.delegate?.onDownloadSuccess != nil {
+                            self.delegate?.onDownloadSuccess!(downloadItem)
+                        }
                     }
                 }
                 if !self.items.isEmpty {
                     self.items.removeFirst()
                 }
                 guard let nextItem = self.items.first else {
-                    dispatch_async(dispatch_get_main_queue()) {
+                    if self.delegate?.onDownloadFinishAll != nil {
                         self.delegate?.onDownloadFinishAll!()
                     }
                     return
